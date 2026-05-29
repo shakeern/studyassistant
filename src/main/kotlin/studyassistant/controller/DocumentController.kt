@@ -57,9 +57,30 @@ class DocumentController(
 
         return documentRepository.save(document)
     }
+
+    @PostMapping("/{documentId}/ask")
+    fun askDocument(
+        @PathVariable documentId: Long,
+        @RequestBody request: AskRequest
+    ): AskResponse {
+
+        val document = documentRepository.findById(documentId)
+            .orElseThrow { RuntimeException("Document not found") }
+        return AskResponse(
+            answer = "You asked: ${request.question}"
+        )
+    }
 }
 
 data class CreateDocumentRequest(
     val fileName: String,
     val content: String
+)
+
+data class AskRequest(
+    val question: String
+)
+
+data class AskResponse(
+    val answer: String
 )
