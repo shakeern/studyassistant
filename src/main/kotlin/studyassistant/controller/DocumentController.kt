@@ -1,6 +1,7 @@
 package studyassistant.controller
 
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import studyassistant.model.Document
 import studyassistant.repository.CourseRepository
 import studyassistant.repository.DocumentRepository
@@ -33,6 +34,24 @@ class DocumentController(
         val document = Document(
             fileName = request.fileName,
             content = request.content,
+            course = course
+        )
+
+        return documentRepository.save(document)
+    }
+
+    @PostMapping("/upload/{courseId}")
+    fun uploadDocument(
+        @PathVariable courseId: Long,
+        @RequestParam("file") file: MultipartFile,
+    ): Document {
+        val course = courseRepository.findById(courseId)
+            .orElseThrow { RuntimeException("Course not found") }
+        val content = String(file.bytes)
+        val fileName = file.originalFilename ?: "uploaded-file"
+        val document = Document(
+            fileName = fileName,
+            content = content,
             course = course
         )
 
