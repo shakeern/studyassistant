@@ -5,12 +5,14 @@ import org.springframework.web.multipart.MultipartFile
 import studyassistant.model.Document
 import studyassistant.repository.CourseRepository
 import studyassistant.repository.DocumentRepository
+import studyassistant.service.AiService
 
 @RestController
 @RequestMapping("/documents")
 class DocumentController(
     private val documentRepository: DocumentRepository,
-    private val courseRepository: CourseRepository
+    private val courseRepository: CourseRepository,
+    private val aiService : AiService
 ) {
 
     @GetMapping
@@ -66,8 +68,15 @@ class DocumentController(
 
         val document = documentRepository.findById(documentId)
             .orElseThrow { RuntimeException("Document not found") }
+
+
+        val answer = aiService.answerQuestion(
+            documentContent = document.content,
+            question = request.question,
+        )
+
         return AskResponse(
-            answer = "You asked: ${request.question}"
+            answer = answer
         )
     }
 }
