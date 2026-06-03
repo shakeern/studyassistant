@@ -2,6 +2,8 @@ package studyassistant.controller
 
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import studyassistant.dto.AskRequest
+import studyassistant.dto.AskResponse
 import studyassistant.model.Document
 import studyassistant.repository.CourseRepository
 import studyassistant.repository.DocumentRepository
@@ -86,10 +88,3 @@ data class CreateDocumentRequest(
     val content: String
 )
 
-data class AskRequest(
-    val question: String
-)
-
-data class AskResponse(
-    val answer: String
-)

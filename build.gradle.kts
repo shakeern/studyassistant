@@ -20,12 +20,21 @@ repositories {
 	maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
+extra["springAiVersion"] = "2.0.0-M8"
+
+dependencyManagement {
+	imports {
+		mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
+	}
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("tools.jackson.module:jackson-module-kotlin")
+	implementation("org.springframework.ai:spring-ai-starter-model-ollama")
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")

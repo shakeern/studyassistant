@@ -1,13 +1,18 @@
 package studyassistant.service
 
-import org.springframework.boot.ssl.pem.PemContent
+
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestClient
+
+import org.springframework.ai.chat.client.ChatClient
+
+
 
 @Service
-class AiService {
+class AiService(
+    private val chatClientBuilder: ChatClient.Builder,
+){
 
-    private val restClient = RestClient.create("http://localhost:11434")
+    private val chatClient = chatClientBuilder.build()
 
     fun answerQuestion(documentContent: String, question: String): String {
         val prompt = """
@@ -22,30 +27,13 @@ class AiService {
             $question
         """.trimIndent()
 
-        val request = OllamaRequest(
-            model = "llama3.2",
-            prompt = prompt,
-            stream = false
-        )
 
-        val response = restClient.post()
-            .uri ("/api/generate")
-            .body(request)
-            .retrieve()
-            .body(OllamaResponse::class.java)
-
-        return response?.response ?: "No response from AI"
+        return chatClient.prompt()
+            .user(prompt)
+            .call()
+            .content() ?: "No Response from AI"
 
 
     }
 }
 
-data class OllamaRequest(
-    var model: String,
-    val prompt: String,
-    val stream: Boolean = false
-)
-
-data class OllamaResponse(
-    val response: String
-)
