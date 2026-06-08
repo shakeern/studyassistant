@@ -5,16 +5,23 @@ import org.springframework.web.multipart.MultipartFile
 import studyassistant.dto.AskRequest
 import studyassistant.dto.AskResponse
 import studyassistant.model.Document
+import studyassistant.model.DocumentChunk
 import studyassistant.repository.CourseRepository
+import studyassistant.repository.DocumentChunkRepository
 import studyassistant.repository.DocumentRepository
 import studyassistant.service.AiService
+import studyassistant.service.DocumentChunkingService
+import studyassistant.service.DocumentTextExtractorService
 
 @RestController
 @RequestMapping("/documents")
 class DocumentController(
     private val documentRepository: DocumentRepository,
     private val courseRepository: CourseRepository,
-    private val aiService : AiService
+    private val aiService: AiService,
+    private val documentTextExtracotrService: DocumentTextExtractorService,
+    private val documentChunkingService: DocumentChunkingService,
+    private val documentChunkRepository: DocumentChunkRepository
 ) {
 
     @GetMapping
@@ -51,7 +58,7 @@ class DocumentController(
     ): Document {
         val course = courseRepository.findById(courseId)
             .orElseThrow { RuntimeException("Course not found") }
-        val content = String(file.bytes)
+        val content = documentTextExtracotrService.extractText(file)
         val fileName = file.originalFilename ?: "uploaded-file"
         val document = Document(
             fileName = fileName,
@@ -59,7 +66,21 @@ class DocumentController(
             course = course
         )
 
-        return documentRepository.save(document)
+        val savedDocument = documentRepository.save(document)
+
+        //chunking
+        val chunks = documentChunkingService.chunkText(content)
+            .mapIndexed { index, chunk ->
+                DocumentChunk(
+                    content = chunk,
+                    chunkIndex = index,
+                    document = savedDocument
+                )
+            }
+
+        documentChunkRepository.saveAll(chunks)
+
+        return savedDocument
     }
 
     @PostMapping("/{documentId}/ask")
